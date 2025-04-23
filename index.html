@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Shout</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Word Shout</h1>
+        <div id="game">
+            <div id="timer">45</div>
+            <button id="startBtn">Start Round</button>
+            <div id="prompt" class="hidden">
+                <p>Did someone guess the word before time ran out?</p>
+                <button onclick="handleCorrect()">Yes</button>
+                <button onclick="handleClosest()">No</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

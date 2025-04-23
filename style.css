@@ -1,0 +1,46 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+}
+
+#timer {
+    font-size: 64px;
+    margin: 20px;
+}
+
+button {
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#startBtn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#prompt button:first-child {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#prompt button:last-child {
+    background-color: #f44336;
+    color: white;
+}
+
+.hidden {
+    display: none;
+}
