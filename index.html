@@ -1,24 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Shout</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buzzwords Game</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Word Shout</h1>
-        <div id="game">
-            <div id="timer">45</div>
-            <button id="startBtn">Start Round</button>
-            <div id="prompt" class="hidden">
-                <p>Did someone guess the word before time ran out?</p>
-                <button onclick="handleCorrect()">Yes</button>
-                <button onclick="handleClosest()">No</button>
-            </div>
-        </div>
+  <div class="container">
+    <h1>Buzzwords</h1>
+
+    <div id="instructions">
+      <h2>How to Play</h2>
+      <p>One person is the <strong>describer</strong> and gets a word. They describe the word without saying it directly. Everyone else tries to guess.</p>
+      <p>If someone guesses correctly, tap their button before the timer ends. If time runs out, confirm if anyone got it right.</p>
+      <p>Correct guess: +30 points for both the describer and guesser. No correct guess: -10 for the describer. Game ends when each player has been the describer once.</p>
     </div>
-    <script src="script.js"></script>
+
+    <div id="setup">
+      <h2>Enter Player Names</h2>
+      <div id="playerInputs">
+        <input type="text" placeholder="Enter name" class="player-input">
+      </div>
+      <button id="addPlayer">Add Player</button>
+      <button id="startGame">Start Game</button>
+    </div>
+
+    <div id="game" class="hidden">
+      <h2 id="roundInfo">Round 1</h2>
+      <p id="describerInfo"></p>
+      <div id="handoffMessage" class="hidden">
+        <p>Please hand the device to the describer before beginning the round.</p>
+        <button id="confirmHandoff">Ready</button>
+      </div>
+      <div id="wordArea" class="hidden">
+        <button id="revealWord">Reveal Word (Describer only)</button>
+        <p id="word" class="hidden"></p>
+        <button id="skipWord" class="hidden">Skip Word</button>
+      </div>
+
+      <div id="timer">15</div>
+      <button id="startRound" class="hidden">Start Round</button>
+      <div id="guessButtons" class="hidden"></div>
+
+      <div id="prompt" class="hidden">
+        <p>Did someone guess the word before time ran out?</p>
+        <button onclick="confirmCorrectGuess(true)">Yes</button>
+        <button onclick="confirmCorrectGuess(false)">No</button>
+      </div>
+
+      <button id="nextRound" class="hidden">Next Round</button>
+      <div id="scoreboard"></div>
+    </div>
+
+    <div id="endScreen" class="hidden">
+      <h2>Game Over!</h2>
+      <div id="finalScores"></div>
+    </div>
+
+  </div>
+
+  <script>
+    let players = [];
+    let scores = {};
+    let round = 1;
+    let currentDescriberIndex = 0;
+    let wordList = [
+      "apple", "banana", "school", "teacher", "football", "computer", "pizza", "car", "music", "dog",
+      "cat", "chair", "bed", "book", "movie", "beach", "camera", "snow", "cookie", "dance",
+      "pen", "hat", "ice", "drum", "boat", "shoe", "frog", "milk", "cake", "star",
+      "jungle", "planet", "trophy", "desert", "keyboard", "window", "glasses", "hammer", "airplane", "mountain",
+      "umbrella", "suitcase", "battery", "helicopter", "necklace", "bottle", "blanket", "candle", "laptop", "whistle"
+    ];
+    let currentWord = "";
+    let timer = 15;
+    let interval = null;
+    let roundActive = false;
+    let guessedCorrectlyBy = null;
+
+    const setup = document.getElementById("setup");
+    const game = document.getElementById("game");
+    const instructions = document.getElementById("instructions");
+    const playerInputs = document.getElementById("playerInputs");
+    const addPlayerBtn = document.getElementById("addPlayer");
+    const startGameBtn = document.getElementById("startGame");
+
+    const roundInfo = document.getElementById("roundInfo");
+    const describerInfo = document.getElementById("describerInfo");
+    const handoffMessage = document.getElementById("handoffMessage");
+    const confirmHandoffBtn = document.getElementById("confirmHandoff");
+    const wordArea = document.getElementById("wordArea");
+    const revealWordBtn = document.getElementById("revealWord");
+    const wordElem = document.getElementById("word");
+    const skipWordBtn = document.getElementById("skipWord");
+    const startRoundBtn = document.getElementById("startRound");
+    const timerDisplay = document.getElementById("timer");
+    const guessButtons = document.getElementById("guessButtons");
+    const promptBox = document.getElementById("prompt");
+    const nextRoundBtn = document.getElementById("nextRound");
+    const scoreboard = document.getElementById("scoreboard");
+    const endScreen = document.getElementById("endScreen");
+    const finalScores = document.getElementById("finalScores");
+
+    addPlayerBtn.onclick = () => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Enter name";
+      input.classList.add("player-input");
+      playerInputs.appendChild(input);
+    };
+
+    startGameBtn.onclick = () => {
+      document.querySelectorAll(".player-input").forEach(input => {
+        if (input.value.trim()) {
+          players.push(input.value.trim());
+          scores[input.value.trim()] = 0;
+        }
+      });
+      if (players.length >= 2) {
+        setup.classList.add("hidden");
+        instructions.classList.add("hidden");
+        game.classList.remove("hidden");
+        updateDescriber();
+        updateScoreboard();
+      } else {
+        alert("Need at least 2 players.");
+      }
+    };
+
+    function updateDescriber() {
+      const describer = players[currentDescriberIndex];
+      describerInfo.textContent = `Describer: ${describer}`;
+      handoffMessage.classList.remove("hidden");
+      wordArea.classList.add("hidden");
+      wordElem.classList.add("hidden");
+      skipWordBtn.classList.add("hidden");
+      guessButtons.innerHTML = '';
+      timer = 15;
+      timerDisplay.textContent = timer;
+      players.forEach((p, idx) => {
+        if (idx !== currentDescriberIndex) {
+          const btn = document.createElement("button");
+          btn.textContent = `${p} Guessed!`;
+          btn.onclick = () => handleCorrectGuess(p);
+          guessButtons.appendChild(btn);
+        }
+      });
+    }
+
+    confirmHandoffBtn.onclick = () => {
+      handoffMessage.classList.add("hidden");
+      wordArea.classList.remove("hidden");
+      startRoundBtn.classList.remove("hidden");
+    };
+
+    revealWordBtn.onclick = () => {
+      currentWord = wordList.length > 0 ? wordList[Math.floor(Math.random() * wordList.length)] : "Placeholder";
+      wordElem.textContent = `Word: ${currentWord}`;
+      wordElem.classList.remove("hidden");
+      skipWordBtn.classList.remove("hidden");
+    };
+
+    skipWordBtn.onclick = () => {
+      revealWordBtn.click();
+    };
+
+    startRoundBtn.onclick = () => {
+      guessedCorrectlyBy = null;
+      timer = 15;
+      roundActive = true;
+      timerDisplay.textContent = timer;
+      promptBox.classList.add("hidden");
+      guessButtons.classList.remove("hidden");
+      startRoundBtn.classList.add("hidden");
+      clearInterval(interval);
+      interval = setInterval(() => {
+        timer--;
+        timerDisplay.textContent = timer;
+        if (timer <= 0) {
+          clearInterval(interval);
+          roundActive = false;
+          if (!guessedCorrectlyBy) {
+            promptBox.classList.remove("hidden");
+          } else {
+            awardPoints();
+          }
+        }
+      }, 1000);
+    };
+
+    function handleCorrectGuess(guesser) {
+      if (!roundActive) return;
+      guessedCorrectlyBy = guesser;
+      clearInterval(interval);
+      roundActive = false;
+      awardPoints();
+    }
+
+    function confirmCorrectGuess(wasGuessed) {
+      promptBox.classList.add("hidden");
+      if (!wasGuessed) {
+        scores[players[currentDescriberIndex]] -= 10;
+      } else {
+        alert("You should have clicked the guesser's button before time ended.");
+      }
+      updateScoreboard();
+      nextRoundBtn.classList.remove("hidden");
+    }
+
+    function awardPoints() {
+      const describer = players[currentDescriberIndex];
+      scores[describer] += 30;
+      scores[guessedCorrectlyBy] += 30;
+      updateScoreboard();
+      nextRoundBtn.classList.remove("hidden");
+    }
+
+    nextRoundBtn.onclick = () => {
+      if (round >= players.length) {
+        game.classList.add("hidden");
+        endScreen.classList.remove("hidden");
+        showFinalScores();
+        return;
+      }
+      round++;
+      currentDescriberIndex = (currentDescriberIndex + 1) % players.length;
+      roundInfo.textContent = `Round ${round}`;
+      updateDescriber();
+      nextRoundBtn.classList.add("hidden");
+    };
+
+    function updateScoreboard() {
+      scoreboard.innerHTML = '<h3>Scoreboard</h3>' + players.map(p => `<p>${p}: ${scores[p]}</p>`).join('');
+    }
+
+    function showFinalScores() {
+      const sorted = [...players].sort((a, b) => scores[b] - scores[a]);
+      finalScores.innerHTML = sorted.map(p => `<p><strong>${p}</strong>: ${scores[p]}</p>`).join('');
+    }
+  </script>
 </body>
 </html>

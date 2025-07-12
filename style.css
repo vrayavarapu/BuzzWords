@@ -1,46 +1,106 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f8ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+  font-family: 'Verdana', sans-serif;
+  background-color: #e6f2ff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 .container {
-    text-align: center;
+  max-width: 700px;
+  width: 90%;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+h1 {
+  font-size: 36px;
+  color: #003366;
+  margin-bottom: 10px;
+}
+
+h2 {
+  font-size: 28px;
+  color: #004080;
+}
+
+p {
+  font-size: 20px;
+  color: #333;
+  line-height: 1.6;
 }
 
 #timer {
-    font-size: 64px;
-    margin: 20px;
+  font-size: 72px;
+  font-weight: bold;
+  color: #ff4500;
+  margin: 20px 0;
 }
 
 button {
-    padding: 15px 30px;
-    margin: 10px;
-    font-size: 18px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
+  padding: 18px 36px;
+  margin: 12px;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-#startBtn {
-    background-color: #4CAF50;
-    color: white;
+button:hover {
+  filter: brightness(0.95);
+}
+
+#startGame, #addPlayer, #startRound, #confirmHandoff, #revealWord, #skipWord, #nextRound {
+  background-color: #007acc;
+  color: white;
+}
+
+#startGame:hover, #addPlayer:hover, #startRound:hover, #confirmHandoff:hover, #revealWord:hover, #skipWord:hover, #nextRound:hover, #playAgain:hover {
+  background-color: #005fa3;
 }
 
 #prompt button:first-child {
-    background-color: #4CAF50;
-    color: white;
+  background-color: #4CAF50;
+  color: white;
 }
 
 #prompt button:last-child {
-    background-color: #f44336;
-    color: white;
+  background-color: #f44336;
+  color: white;
+}
+
+input.player-input {
+  padding: 12px;
+  font-size: 18px;
+  margin: 10px 5px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 80%;
 }
 
 .hidden {
-    display: none;
+  display: none;
+}
+
+#scoreboard, #finalScores {
+  margin-top: 20px;
+  font-size: 22px;
+  color: #222;
+}
+
+#guessButtons button {
+  background-color: #f0ad4e;
+  color: white;
+  font-size: 20px;
+}
+
+#guessButtons button:hover {
+  background-color: #ec971f;
 }
